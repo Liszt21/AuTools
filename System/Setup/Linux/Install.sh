@@ -27,8 +27,9 @@ installspacemacs() {
         if [ ! -d "$APP_HOME/cache/emacs" ];then
             echo "Downloading source"
             cd $APP_HOME/cache
-            wget -O emacs.tar.gz http://mirrors.ustc.edu.cn/gnu/emacs/emacs-26.3.tar.gz
+            wget http://mirrors.ustc.edu.cn/gnu/emacs/emacs-26.3.tar.gz
             tar -xvzf emacs.tar.gz
+            mv ./emacs-26.3 emacs
         fi
         # Install dependencies
         sudo apt-get update

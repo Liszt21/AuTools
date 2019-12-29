@@ -4,19 +4,56 @@ set -e
 
 APP_HOME=${APP_HOME:-~/Apps}
 IS_ME=false
-# Check
-if [ "liszt" = "$USER" ];then
-    IS_ME=true
+# get shell
+shell="$1"
+if [ -z "$shell" ]; then
+  shell="$(ps c -p "$PPID" -o 'ucomm=' 2>/dev/null || true)"
+  shell="${shell##-}"
+  shell="${shell%% *}"
+  shell="$(basename "${shell:-$SHELL}")"
 fi
-if [ ! -d "$APP_HOME" ];then
-    mkdir "$APP_HOME"
-fi
-if [ ! -d "$APP_HOME/cache" ];then
-    mkdir "$APP_HOME/cache"
-fi
+
+check() {
+    # Checking
+    if [ "liszt" = "$USER" ];then
+        IS_ME=true
+    fi
+    if [ ! -d "$APP_HOME" ];then
+        mkdir "$APP_HOME"
+    fi
+    if [ ! -d "$APP_HOME/cache" ];then
+        mkdir "$APP_HOME/cache"
+    fi
+    if [ ! -f "$APP_HOME/entry" ];then
+        touch $APP_HOME/entry
+        case "$shell" in
+        bash )
+            profile=~/.bashrc
+            ;;
+        zsh )
+            profile=~/.zshrc
+            ;;
+        ksh )
+            profile=~/.profile
+            ;;
+        fish )
+            profile=~/.config/fish/config.fish
+            ;;
+        * )
+            profile=~/.bashrc
+            ;;
+        esac
+        echo "source $APP_HOME/entry" >> $profile
+    fi
+}
 
 setupenv() {
     echo "Setting environment"
+    sudo apt-get install git wget curl vim
+}
+
+installzsh() {
+    echo "Install zsh & oh-my-zsh"
 
 }
 
@@ -47,11 +84,13 @@ installspacemacs() {
         echo "Emacs is installed"
     fi
     echo "Install spacemacs"
-    if [ ! -f "~/.emacs.d/spacemacs.mk" ];then
-        rm -rf ~/emacs.d
+    if [ ! -e ~/.emacs.d/spacemacs.mk ];then
+        rm -rf ~/.emacs.d
         # git clone -b develop https://github.com/syl20bnr/spacemacs ~/.emacs.d
         git clone -b develop https://gitee.com/mirrors/spacemacs ~/.emacs.d
-        if [ "$IS_ME" ];then
+    fi
+    if [ "$IS_ME" ];then
+        if [ ! -d ~/.spacemacs.d/layers/liszt/ ];then
             rm -rf ~/.spacemacs.d
             git clone https://github.com/Liszt21/.spacemacs.d.git ~/.spacemacs.d
         fi
@@ -59,25 +98,31 @@ installspacemacs() {
 }
 
 installpython() {
-    echo "Installing Python"
+    echo "Installing python"
 
 }
 
 installdocker() {
-    echo "Installing Docker"
+    echo "Installing docker"
 }
 
 installnvm() {
-    echo "Installing Nvm"
+    echo "Installing nvm"
+}
+
+setentry() {
+    echo "Setting entry"
+
 }
 
 finishsetup() {
     echo "Finishing"
-    
+    touch ~/.entry
 }
 
 main() {
     echo "System auto setup --- Linux"
+    check
     setupenv
 
     installspacemacs

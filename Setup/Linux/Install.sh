@@ -77,7 +77,7 @@ installspacemacs() {
             echo "Downloading source"
             cd $APP_HOME/cache
             wget http://mirrors.ustc.edu.cn/gnu/emacs/emacs-26.3.tar.gz
-            tar -xvzf emacs.tar.gz
+            tar -xvzf emacs-26.3.tar.gz
             mv ./emacs-26.3 emacs
         fi
         # Install dependencies

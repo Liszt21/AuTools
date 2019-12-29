@@ -26,6 +26,8 @@ check() {
     fi
     if [ ! -f "$APP_HOME/entry" ];then
         touch $APP_HOME/entry
+        echo APP_HOME=${APP_HOME:-~/Apps} >> $APP_HOME/entry
+        echo export APP_HOME >> $APP_HOME/entry
         case "$shell" in
         bash )
             profile=~/.bashrc
@@ -95,6 +97,11 @@ installspacemacs() {
             git clone https://github.com/Liszt21/.spacemacs.d.git ~/.spacemacs.d
         fi
     fi
+
+    if ! command -v emacs 1>/dev/null 2>&1;then
+        echo "Adding emacs to PATH"
+        echo "export PATH=\"$APP_HOME/emacs/bin:\$PATH\"" >> $APP_HOME/entry
+    fi
 }
 
 installpython() {
@@ -108,11 +115,6 @@ installdocker() {
 
 installnvm() {
     echo "Installing nvm"
-}
-
-setentry() {
-    echo "Setting entry"
-
 }
 
 finishsetup() {

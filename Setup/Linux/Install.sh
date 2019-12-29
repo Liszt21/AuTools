@@ -146,7 +146,7 @@ installnvm() {
     echo "Installing nvm"
     if ! command -v nvm 1>/dev/null 2>&1;then
         if [ ! -d "$APP_HOME/nvm" ];then
-            git clone https://gitee.com/mirrors/nvm.git nvm
+            git clone https://gitee.com/mirrors/nvm.git $APP_HOME/nvm
         fi
         NVM_DIR=$APP_HOME/nvm
         echo export NVM_DIR=$APP_HOME/nvm >> $APP_HOME/entry

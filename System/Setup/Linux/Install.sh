@@ -56,7 +56,12 @@ setupenv() {
 
 installzsh() {
     echo "Install zsh & oh-my-zsh"
-
+    if [ ! -f ~/.zshrc ];then
+        echo "Remember to exit from zsh to continue"
+        sudo apt-get install zsh
+        sh -c "$(curl -fsSL https://gitee.com/mirrors/oh-my-zsh/raw/master/tools/install.sh)"
+        echo "source $APP_HOME/entry" >> ~/.zshrc
+    fi
 }
 
 installspacemacs() {
@@ -127,6 +132,7 @@ main() {
     check
     setupenv
 
+    installzsh
     installspacemacs
     installnvm
     installpython

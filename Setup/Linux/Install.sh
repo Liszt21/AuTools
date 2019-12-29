@@ -3,6 +3,7 @@
 set -e
 
 APP_HOME=${APP_HOME:-~/Apps}
+ENTRY=${ENTRY:-false}
 IS_ME=false
 # get shell
 shell="$1"
@@ -27,25 +28,29 @@ check() {
     if [ ! -f "$APP_HOME/entry" ];then
         touch $APP_HOME/entry
         echo APP_HOME=${APP_HOME:-~/Apps} >> $APP_HOME/entry
+        echo ENTRY
         echo export APP_HOME >> $APP_HOME/entry
-        case "$shell" in
-        bash )
-            profile=~/.bashrc
-            ;;
-        zsh )
-            profile=~/.zshrc
-            ;;
-        ksh )
-            profile=~/.profile
-            ;;
-        fish )
-            profile=~/.config/fish/config.fish
-            ;;
-        * )
-            profile=~/.bashrc
-            ;;
-        esac
-        echo "source $APP_HOME/entry" >> $profile
+        if ! $ENTRY ;then
+            case "$shell" in
+            bash )
+                profile=~/.bashrc
+                ;;
+            zsh )
+                profile=~/.zshrc
+                ;;
+            ksh )
+                profile=~/.profile
+                ;;
+            fish )
+                profile=~/.config/fish/config.fish
+                ;;
+            * )
+                profile=~/.bashrc
+                ;;
+            esac
+            echo "source $APP_HOME/entry" >> $profile
+            echo export ENTRY=true >> $profile
+        fi
     fi
 }
 
@@ -119,7 +124,7 @@ installpython() {
             export PYENV_ROOT="$APP_HOME/pyenv"
             export PATH="$PYENV_ROOT/bin:$PATH"
             eval "$(pyenv init -)"
-            
+
             pyenv install 3.8.1
             pyenv global 3.8.1
             pyenv rehash
@@ -139,6 +144,15 @@ installdocker() {
 
 installnvm() {
     echo "Installing nvm"
+    if ! command -v nvm 1>/dev/null 2>&1;then
+        if [ ! -d "$APP_HOME/nvm" ];then
+            git clone https://gitee.com/mirrors/nvm.git nvm
+        fi
+        NVM_DIR=$APP_HOME/nvm
+        echo export NVM_DIR=$APP_HOME/nvm >> $APP_HOME/entry
+        echo "[ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\"  # This loads nvm" >> $APP_HOME/entry
+        echo "[ -s \"\$NVM_DIR/bash_completion\" ] && \. \"\$NVM_DIR/bash_completion\"" >> $APP_HOME/entry
+    fi
 }
 
 finishsetup() {

@@ -1,5 +1,16 @@
 # Autools
 
-## System
+## Tools
+- IPLocator :: python
 
-## Simple
+## Setup
+### Linux
+- emacs
+- zsh
+- pyenv
+- nvm
+- docker
+- pcloud
+
+### Windows
+- scoop

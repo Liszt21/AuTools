@@ -111,7 +111,26 @@ installspacemacs() {
 
 installpython() {
     echo "Installing python"
-
+    if ! command -v pyenv 1>/dev/null 2>&1;then
+        if [ ! -d "$APP_HOME/pyenv" ];then
+            curl https://pyenv.run | bash
+            sudo apt-get install zlibc zlib1g zlib1g-dev libffi-dev libssl-dev libbz2-dev libreadline-dev libsqlite3-dev tk-dev -y
+            mv ~/.pyenv $APP_HOME/pyenv
+            export PYENV_ROOT="$APP_HOME/pyenv"
+            export PATH="$PYENV_ROOT/bin:$PATH"
+            eval "$(pyenv init -)"
+            
+            pyenv install 3.8.1
+            pyenv global 3.8.1
+            pyenv rehash
+        fi
+        PYENV_ROOT="$APP_HOME/pyenv"
+        echo "export PATH=\"$PYENV_ROOT/bin:\$PATH\"" >> $APP_HOME/entry
+        echo "eval \"\$(pyenv init -)\"" >> $APP_HOME/entry
+        # echo "eval \"\$(pyenv virtualenv-init -)\"" >> $APP_HOME/entry
+    else
+        echo "Pyenv is already installed"
+    fi
 }
 
 installdocker() {

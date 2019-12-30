@@ -5,6 +5,7 @@ set -e
 APP_HOME=${APP_HOME:-~/Apps}
 ENTRY=${ENTRY:-false}
 IS_ME=false
+
 # get shell
 shell="$1"
 if [ -z "$shell" ]; then
@@ -30,6 +31,9 @@ check() {
         echo APP_HOME=${APP_HOME:-~/Apps} >> $APP_HOME/entry
         echo ENTRY
         echo export APP_HOME >> $APP_HOME/entry
+        echo source $APP_HOME/pyenv/entry >> $APP_HOME/entry
+        echo source $APP_HOME/nvm/entry >> $APP_HOME/entry
+        
         if ! $ENTRY ;then
             case "$shell" in
             bash )
@@ -125,16 +129,15 @@ installpython() {
             export PYENV_ROOT="$APP_HOME/pyenv"
             export PATH="$PYENV_ROOT/bin:$PATH"
             eval "$(pyenv init -)"
-
+            # init 
             pyenv install 3.8.1
             pyenv global 3.8.1
             pyenv rehash
         fi
         PYENV_ROOT="$APP_HOME/pyenv"
-        echo "export PATH=\"$PYENV_ROOT/bin:\$PATH\"" >> $APP_HOME/entry
-        echo "eval \"\$(pyenv init -)\"" >> $APP_HOME/entry
-        echo "eval \"\$(pyenv virtualenv-init -)\"" >> $APP_HOME/entry
-        echo "" >> $APP_HOME/entry
+        echo "export PATH=\"$PYENV_ROOT/bin:\$PATH\"" > $APP_HOME/pyenv/entry
+        echo "eval \"\$(pyenv init -)\"" >> $APP_HOME/pyenv/entry
+        echo "eval \"\$(pyenv virtualenv-init -)\"" >> $APP_HOME/pyenv/entry
     else
         echo "Pyenv is already installed"
     fi
@@ -173,10 +176,9 @@ installnvm() {
             git clone https://gitee.com/mirrors/nvm.git $APP_HOME/nvm
         fi
         NVM_DIR=$APP_HOME/nvm
-        echo export NVM_DIR=$APP_HOME/nvm >> $APP_HOME/entry
-        echo "[ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\"  # This loads nvm" >> $APP_HOME/entry
-        echo "[ -s \"\$NVM_DIR/bash_completion\" ] && \. \"\$NVM_DIR/bash_completion\"" >> $APP_HOME/entry
-        echo "" >> $APP_HOME/entry
+        echo export NVM_DIR=$APP_HOME/nvm > $APP_HOME/nvm/entry
+        echo "[ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\"  # This loads nvm" >> $APP_HOME/nvm/entry
+        echo "[ -s \"\$NVM_DIR/bash_completion\" ] && \. \"\$NVM_DIR/bash_completion\"" >> $APP_HOME/nvm/entry
 
         export NVM_DIR=/home/liszt/Apps/nvm
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm

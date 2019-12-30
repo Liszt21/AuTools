@@ -194,12 +194,18 @@ installnvm() {
         export NVM_DIR=/home/liszt/Apps/nvm
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
         [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-
+        
+        nvm install 13
     fi
+    sudo apt-get install yarn -y
+    
 }
 
 finishsetup() {
     echo "Finished"
+    if [ "$IS_ME" ];then
+        yarn global add @vue/cli
+    fi
     echo "Using 'source $APP_HOME/entry' to reload"
 }
 

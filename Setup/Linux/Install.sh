@@ -26,35 +26,32 @@ check() {
     if [ ! -d "$APP_HOME/cache" ];then
         mkdir "$APP_HOME/cache"
     fi
-    if [ ! -f "$APP_HOME/entry" ];then
-        touch $APP_HOME/entry
-        echo APP_HOME=${APP_HOME:-~/Apps} >> $APP_HOME/entry
-        echo ENTRY
+    if ! $ENTRY ;then
+        echo APP_HOME=\${APP_HOME:-~/Apps} > $APP_HOME/entry
         echo export APP_HOME >> $APP_HOME/entry
-        echo source $APP_HOME/pyenv/entry >> $APP_HOME/entry
-        echo source $APP_HOME/nvm/entry >> $APP_HOME/entry
-        
-        if ! $ENTRY ;then
-            case "$shell" in
-            bash )
-                profile=~/.bashrc
-                ;;
-            zsh )
-                profile=~/.zshrc
-                ;;
-            ksh )
-                profile=~/.profile
-                ;;
-            fish )
-                profile=~/.config/fish/config.fish
-                ;;
-            * )
-                profile=~/.bashrc
-                ;;
-            esac
-            echo "source $APP_HOME/entry" >> $profile
-            echo export ENTRY=true >> $profile
-        fi
+        echo source \$APP_HOME/pyenv/entry >> $APP_HOME/entry
+        echo source \$APP_HOME/nvm/entry >> $APP_HOME/entry
+
+        case "$shell" in
+        bash )
+            profile=~/.bashrc
+            ;;
+        zsh )
+            profile=~/.zshrc
+            ;;
+        ksh )
+            profile=~/.profile
+            ;;
+        fish )
+            profile=~/.config/fish/config.fish
+            ;;
+        * )
+            profile=~/.bashrc
+            ;;
+        esac
+        echo "source $APP_HOME/entry" >> $profile
+        echo export ENTRY=true >> $profile
+
     fi
 }
 
@@ -122,9 +119,23 @@ installpython() {
     echo "Installing python"
     if ! command -v pyenv 1>/dev/null 2>&1;then
         if [ ! -d "$APP_HOME/pyenv" ];then
-            curl https://pyenv.run | bash
+            # curl https://pyenv.run | bash
+            failed_checkout() {
+                echo "Failed to git clone $1"
+                exit -1
+            }
+            checkout() {
+                [ -d "$2" ] || git clone --depth 1 "$1" "$2" || failed_checkout "$1"
+            }
+
+            checkout "https://github.com/pyenv/pyenv.git"            "$APP_HOME/pyenv"
+            checkout "https://github.com/pyenv/pyenv-doctor.git"     "$APP_HOME/pyenv/plugins/pyenv-doctor"
+            checkout "https://github.com/pyenv/pyenv-installer.git"  "$APP_HOME/pyenv/plugins/pyenv-installer"
+            checkout "https://github.com/pyenv/pyenv-update.git"     "$APP_HOME/pyenv/plugins/pyenv-update"
+            checkout "https://github.com/pyenv/pyenv-virtualenv.git" "$APP_HOME/pyenv/plugins/pyenv-virtualenv"
+            checkout "https://github.com/pyenv/pyenv-which-ext.git"  "$APP_HOME/pyenv/plugins/pyenv-which-ext"
+
             sudo apt-get install zlibc zlib1g zlib1g-dev libffi-dev libssl-dev libbz2-dev libreadline-dev libsqlite3-dev tk-dev -y
-            mv ~/.pyenv $APP_HOME/pyenv
 
             export PYENV_ROOT="$APP_HOME/pyenv"
             export PATH="$PYENV_ROOT/bin:$PATH"
@@ -188,7 +199,8 @@ installnvm() {
 }
 
 finishsetup() {
-    echo "Finishing"
+    echo "Finished"
+    echo "Using 'source $APP_HOME/entry' to reload"
 }
 
 main() {

@@ -121,6 +121,7 @@ installpython() {
             curl https://pyenv.run | bash
             sudo apt-get install zlibc zlib1g zlib1g-dev libffi-dev libssl-dev libbz2-dev libreadline-dev libsqlite3-dev tk-dev -y
             mv ~/.pyenv $APP_HOME/pyenv
+
             export PYENV_ROOT="$APP_HOME/pyenv"
             export PATH="$PYENV_ROOT/bin:$PATH"
             eval "$(pyenv init -)"
@@ -132,7 +133,8 @@ installpython() {
         PYENV_ROOT="$APP_HOME/pyenv"
         echo "export PATH=\"$PYENV_ROOT/bin:\$PATH\"" >> $APP_HOME/entry
         echo "eval \"\$(pyenv init -)\"" >> $APP_HOME/entry
-        # echo "eval \"\$(pyenv virtualenv-init -)\"" >> $APP_HOME/entry
+        echo "eval \"\$(pyenv virtualenv-init -)\"" >> $APP_HOME/entry
+        echo "" >> $APP_HOME/entry
     else
         echo "Pyenv is already installed"
     fi
@@ -174,6 +176,12 @@ installnvm() {
         echo export NVM_DIR=$APP_HOME/nvm >> $APP_HOME/entry
         echo "[ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\"  # This loads nvm" >> $APP_HOME/entry
         echo "[ -s \"\$NVM_DIR/bash_completion\" ] && \. \"\$NVM_DIR/bash_completion\"" >> $APP_HOME/entry
+        echo "" >> $APP_HOME/entry
+
+        export NVM_DIR=/home/liszt/Apps/nvm
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+        [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
     fi
 }
 

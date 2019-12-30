@@ -57,7 +57,7 @@ check() {
 
 setupenv() {
     echo "Setting environment"
-    sudo apt-get install git wget curl vim
+    sudo apt-get install git wget curl vim -y
 }
 
 installzsh() {
@@ -148,7 +148,7 @@ installpython() {
         PYENV_ROOT="$APP_HOME/pyenv"
         echo "export PATH=\"$PYENV_ROOT/bin:\$PATH\"" > $APP_HOME/pyenv/entry
         echo "eval \"\$(pyenv init -)\"" >> $APP_HOME/pyenv/entry
-        echo "eval \"\$(pyenv virtualenv-init -)\"" >> $APP_HOME/pyenv/entry
+        # echo "eval \"\$(pyenv virtualenv-init -)\"" >> $APP_HOME/pyenv/entry
     else
         echo "Pyenv is already installed"
     fi

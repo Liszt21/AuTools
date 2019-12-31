@@ -145,8 +145,8 @@ installpython() {
             pyenv global 3.8.1
             pyenv rehash
         fi
-        PYENV_ROOT="$APP_HOME/pyenv"
-        echo "export PATH=\"$PYENV_ROOT/bin:\$PATH\"" > $APP_HOME/pyenv/entry
+        echo PYENV_ROOT="$APP_HOME/pyenv" >> $APP_HOME/pyenv/entry
+        echo "export PATH=\"\$PYENV_ROOT/bin:\$PATH\"" > $APP_HOME/pyenv/entry
         echo "eval \"\$(pyenv init -)\"" >> $APP_HOME/pyenv/entry
         # echo "eval \"\$(pyenv virtualenv-init -)\"" >> $APP_HOME/pyenv/entry
     else

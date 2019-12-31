@@ -64,7 +64,7 @@ installzsh() {
     echo "Install zsh & oh-my-zsh"
     if [ ! -f ~/.zshrc ];then
         echo "Remember to exit from zsh to continue"
-        sudo apt-get install zsh
+        sudo apt-get install zsh -y
         sh -c "$(curl -fsSL https://gitee.com/mirrors/oh-my-zsh/raw/master/tools/install.sh)"
         echo "source $APP_HOME/entry" >> ~/.zshrc
     fi
@@ -166,14 +166,14 @@ installdocker() {
             ca-certificates \
             curl \
             gnupg-agent \
-            software-properties-common
+            software-properties-common -y
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
         sudo apt-key fingerprint 0EBFCD88
         sudo add-apt-repository \
             "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
             $(lsb_release -cs) \
             stable"
-        sudo apt-get install docker-ce docker-ce-cli containerd.io
+        sudo apt-get install docker-ce docker-ce-cli containerd.io -y
         sudo usermod -aG docker $USER
     else
         echo "Docker is already installed"
@@ -204,6 +204,7 @@ installnvm() {
 finishsetup() {
     echo "Finished"
     if [ "$IS_ME" ];then
+        pip install jupyter requests numpy scipy wakatime
         yarn global add @vue/cli
     fi
     echo "Using 'source $APP_HOME/entry' to reload"

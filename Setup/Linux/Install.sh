@@ -145,8 +145,8 @@ installpython() {
             pyenv global 3.8.1
             pyenv rehash
         fi
-        PYENV_ROOT="$APP_HOME/pyenv"
-        echo "export PATH=\"$PYENV_ROOT/bin:\$PATH\"" > $APP_HOME/pyenv/entry
+        echo PYENV_ROOT="$APP_HOME/pyenv" >> $APP_HOME/pyenv/entry
+        echo "export PATH=\"\$PYENV_ROOT/bin:\$PATH\"" > $APP_HOME/pyenv/entry
         echo "eval \"\$(pyenv init -)\"" >> $APP_HOME/pyenv/entry
         # echo "eval \"\$(pyenv virtualenv-init -)\"" >> $APP_HOME/pyenv/entry
     else
@@ -197,7 +197,9 @@ installnvm() {
         
         nvm install 13
     fi
-    sudo apt-get install yarn -y
+    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+    sudo apt-get update && sudo apt-get install yarn -y
     
 }
 

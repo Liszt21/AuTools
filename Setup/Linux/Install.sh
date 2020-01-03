@@ -145,7 +145,7 @@ installpython() {
             pyenv global 3.8.1
             pyenv rehash
         fi
-        echo export PYENV_ROOT="\$APP_HOME/pyenv" >> $APP_HOME/pyenv/entry
+        echo "export PYENV_ROOT=\"\$APP_HOME/pyenv\"" >> $APP_HOME/pyenv/entry
         echo "export PATH=\"\$PYENV_ROOT/bin:\$PATH\"" > $APP_HOME/pyenv/entry
         echo "eval \"\$(pyenv init -)\"" >> $APP_HOME/pyenv/entry
         # echo "eval \"\$(pyenv virtualenv-init -)\"" >> $APP_HOME/pyenv/entry
@@ -159,22 +159,24 @@ installdocker() {
     # sh -c "$(curl -fsSL https://get.docker.com)"
     # sudo usermod -aG docker $USER
     if ! command -v docker 1>/dev/null 2>&1;then
-        sudo apt-get remove docker docker-engine docker.io 
-        sudo apt-get update
-        sudo apt-get install \
-            apt-transport-https \
-            ca-certificates \
-            curl \
-            gnupg-agent \
-            software-properties-common -y
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-        sudo apt-key fingerprint 0EBFCD88
-        sudo add-apt-repository \
-            "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-            $(lsb_release -cs) \
-            stable"
-        sudo apt-get install docker-ce docker-ce-cli containerd.io -y
-        sudo usermod -aG docker $USER
+        # sudo apt-get remove docker docker-engine docker.io 
+        # sudo apt-get update
+        # sudo apt-get install \
+        #     apt-transport-https \
+        #     ca-certificates \
+        #     curl \
+        #     gnupg-agent \
+        #     software-properties-common -y
+        # curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+        # sudo apt-key fingerprint 0EBFCD88
+        # sudo add-apt-repository \
+        #     "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+        #     $(lsb_release -cs) \
+        #     stable"
+        # sudo apt-get install docker-ce docker-ce-cli containerd.io -y
+        # sudo usermod -aG docker $USER
+        sudo sh -c "($curl -fsSL https://get.docker.com)"
+        sudo usermod -aG docker your-user
     else
         echo "Docker is already installed"
     fi

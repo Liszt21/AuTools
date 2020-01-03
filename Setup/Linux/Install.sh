@@ -175,7 +175,7 @@ installdocker() {
         #     stable"
         # sudo apt-get install docker-ce docker-ce-cli containerd.io -y
         # sudo usermod -aG docker $USER
-        sudo sh -c "($curl -fsSL https://get.docker.com)"
+        sudo sh -c "$(curl -fsSL https://get.docker.com)"
         sudo usermod -aG docker your-user
     else
         echo "Docker is already installed"

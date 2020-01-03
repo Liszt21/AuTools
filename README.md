@@ -7,6 +7,7 @@
 ### Linux
 #### Usage
 ```
+# Support ubuntu
 # from Github
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/Liszt21/AuTools/master/Setup/Linux/Install.sh)"
 # from Gitee

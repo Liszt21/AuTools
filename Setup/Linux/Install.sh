@@ -145,8 +145,8 @@ installpython() {
             pyenv global 3.8.1
             pyenv rehash
         fi
-        echo "export PYENV_ROOT=\"\$APP_HOME/pyenv\"" >> $APP_HOME/pyenv/entry
-        echo "export PATH=\"\$PYENV_ROOT/bin:\$PATH\"" > $APP_HOME/pyenv/entry
+        echo "export PYENV_ROOT=\"\$APP_HOME/pyenv\"" > $APP_HOME/pyenv/entry
+        echo "export PATH=\"\$PYENV_ROOT/bin:\$PATH\"" >> $APP_HOME/pyenv/entry
         echo "eval \"\$(pyenv init -)\"" >> $APP_HOME/pyenv/entry
         # echo "eval \"\$(pyenv virtualenv-init -)\"" >> $APP_HOME/pyenv/entry
     else
@@ -175,8 +175,8 @@ installdocker() {
         #     stable"
         # sudo apt-get install docker-ce docker-ce-cli containerd.io -y
         # sudo usermod -aG docker $USER
-        sudo sh -c "($curl -fsSL https://get.docker.com)"
-        sudo usermod -aG docker your-user
+        sudo sh -c "$(curl -fsSL https://get.docker.com)"
+        sudo usermod -aG docker $USER
     else
         echo "Docker is already installed"
     fi

@@ -172,9 +172,27 @@ installdocker() {
     fi
 }
 
+wslsetting() {
+    if [ WSL_DISTRO_NAME ];then
+        echo "In wsl"
+        echo "Create symbolic link of fonts"
+        sudo ln -s /mnt/c/Windows/Fonts/* /usr/share/fonts/
+    fi
+}
+
 finishsetup() {
     echo "Finishing"
     if [ "$IS_ME" ];then
+        if [ WSL_DISTRO_NAME ];then
+            ln -s /mnt/c/Liszt/Notes ~/Notes
+            ln -s /mnt/c/Liszt/Projects ~/Projects
+            ln -s /mnt/c/Share ~/Share
+            if [ -d "$HOME/.spacemacs.d" ];then
+                rm -rf "$HOME/.spacemacs.d"
+            fi
+            ln -s /mnt/c/Users/liszt/AppData/Roaming/.spacemacs.d ~/.spacemacs.d
+        fi
+
         if [ ! -d ~/.spacemacs.d/layers/liszt/ ];then
             rm -rf ~/.spacemacs.d
             git clone https://github.com/Liszt21/.spacemacs.d.git ~/.spacemacs.d
@@ -208,7 +226,7 @@ main() {
     installpyenv || echo "Install pyenv failed!!!\n"
     installnvm || echo "Install nvm failed!!!\n"
     installdocker || echo "Install docker failed!!!\n"
-
+    wslsetting || echo "Wsl setup failed!!!\n"
     finishsetup
 }
 

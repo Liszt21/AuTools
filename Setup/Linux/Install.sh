@@ -70,7 +70,7 @@ installzsh() {
     fi
 }
 
-installspacemacs() {
+installemacs() {
     echo "Installing Emacs"
     # Check
     if [ ! -d "$APP_HOME/emacs" ];then
@@ -102,12 +102,6 @@ installspacemacs() {
         # git clone -b develop https://github.com/syl20bnr/spacemacs ~/.emacs.d
         git clone -b develop https://gitee.com/mirrors/spacemacs ~/.emacs.d
     fi
-    if [ "$IS_ME" ];then
-        if [ ! -d ~/.spacemacs.d/layers/liszt/ ];then
-            rm -rf ~/.spacemacs.d
-            git clone https://github.com/Liszt21/.spacemacs.d.git ~/.spacemacs.d
-        fi
-    fi
 
     if ! command -v emacs 1>/dev/null 2>&1;then
         echo "Adding emacs to PATH"
@@ -115,7 +109,7 @@ installspacemacs() {
     fi
 }
 
-installpython() {
+installpyenv() {
     echo "Installing python"
     if ! command -v pyenv 1>/dev/null 2>&1;then
         if [ ! -d "$APP_HOME/pyenv" ];then
@@ -181,6 +175,10 @@ installnvm() {
 finishsetup() {
     echo "Finishing"
     if [ "$IS_ME" ];then
+        if [ ! -d ~/.spacemacs.d/layers/liszt/ ];then
+            rm -rf ~/.spacemacs.d
+            git clone https://github.com/Liszt21/.spacemacs.d.git ~/.spacemacs.d
+        fi
         pyenv install 3.8.1
         pyenv global 3.8.1
         pyenv rehash
@@ -203,12 +201,12 @@ main() {
     echo "System auto setup --- Linux"
     check
     setupenv
-
-    installzsh
-    installspacemacs
-    installpython
-    installnvm
-    installdocker
+    
+    installzsh || echo "Install zsh failed!!!\n"
+    installemacs || echo "Install emacs failed!!!\n"
+    installpyenv || echo "Install pyenv failed!!!\n"
+    installnvm || echo "Install nvm failed!!!\n"
+    installdocker || echo "Install docker failed!!!\n"
 
     finishsetup
 }

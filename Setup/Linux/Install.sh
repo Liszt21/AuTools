@@ -140,10 +140,7 @@ installpython() {
             export PYENV_ROOT="$APP_HOME/pyenv"
             export PATH="$PYENV_ROOT/bin:$PATH"
             eval "$(pyenv init -)"
-            # init 
-            pyenv install 3.8.1
-            pyenv global 3.8.1
-            pyenv rehash
+            
         fi
         echo "export PYENV_ROOT=\"\$APP_HOME/pyenv\"" > $APP_HOME/pyenv/entry
         echo "export PATH=\"\$PYENV_ROOT/bin:\$PATH\"" >> $APP_HOME/pyenv/entry
@@ -197,18 +194,24 @@ installnvm() {
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
         [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
         
-        nvm install 13
     fi
-    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-    echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-    sudo apt-get update && sudo apt-get install yarn -y
-    
 }
 
 finishsetup() {
     echo "Finished"
     if [ "$IS_ME" ];then
+        pyenv install 3.8.1
+        pyenv global 3.8.1
+        pyenv rehash
+
         pip install jupyter requests numpy scipy wakatime
+        
+        nvm install 13
+
+        curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+        echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+        sudo apt-get update && sudo apt-get install yarn -y
+        
         yarn global add @vue/cli
     fi
     echo "Using 'source $APP_HOME/entry' to reload"

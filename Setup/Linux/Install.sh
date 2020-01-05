@@ -185,14 +185,15 @@ finishsetup() {
         pyenv global 3.8.1
         pyenv rehash
 
-        pip install jupyter requests numpy scipy wakatime
+        pip install jupyterlab requests numpy scipy wakatime scapy scrapy bs4 flask
         
         nvm install 13
 
         curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
         echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
         sudo apt-get update && sudo apt-get install yarn -y
-        
+        sudo rm /etc/apt/sources.list.d/yarn.list
+
         yarn global add @vue/cli
     fi
     echo "Using 'source $APP_HOME/entry' to reload"

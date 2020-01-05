@@ -55,7 +55,7 @@ check() {
     fi
 }
 
-setupenv() {
+preinstall() {
     echo "Setting environment"
     sudo apt-get install git wget curl vim screen -y
 }
@@ -145,16 +145,6 @@ installpyenv() {
     fi
 }
 
-installdocker() {
-    echo "Installing docker"
-    if ! command -v docker 1>/dev/null 2>&1;then
-        sudo sh -c "$(curl -fsSL https://get.docker.com)"
-        sudo usermod -aG docker $USER
-    else
-        echo "Docker is already installed"
-    fi
-}
-
 installnvm() {
     echo "Installing nvm"
     if ! command -v nvm 1>/dev/null 2>&1;then
@@ -172,6 +162,16 @@ installnvm() {
     fi
 }
 
+installdocker() {
+    echo "Installing docker"
+    if ! command -v docker 1>/dev/null 2>&1;then
+        sudo sh -c "$(curl -fsSL https://get.docker.com)"
+        sudo usermod -aG docker $USER
+    else
+        echo "Docker is already installed"
+    fi
+}
+
 finishsetup() {
     echo "Finishing"
     if [ "$IS_ME" ];then
@@ -179,6 +179,7 @@ finishsetup() {
             rm -rf ~/.spacemacs.d
             git clone https://github.com/Liszt21/.spacemacs.d.git ~/.spacemacs.d
         fi
+
         pyenv install 3.8.1
         pyenv global 3.8.1
         pyenv rehash
@@ -200,7 +201,7 @@ finishsetup() {
 main() {
     echo "System auto setup --- Linux"
     check
-    setupenv
+    preinstall
     
     installzsh || echo "Install zsh failed!!!\n"
     installemacs || echo "Install emacs failed!!!\n"

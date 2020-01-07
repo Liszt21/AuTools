@@ -24,3 +24,12 @@ sh -c "$(curl -fsSL https://gitee.com/liszt21/AuTools/raw/master/Setup/Linux/Ins
 
 ### Windows
 - scoop
+
+### Mac
+```
+# from Github
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/Liszt21/AuTools/master/Setup/Mac/Install.sh)"
+# from Gitee
+sh -c "$(curl -fsSL https://gitee.com/liszt21/AuTools/raw/master/Setup/Mac/Install.sh)"
+
+```

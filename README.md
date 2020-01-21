@@ -1,8 +1,5 @@
 # Autools
 
-## Tools
-- IPLocator :: python
-
 ## Setup
 ### Linux
 #### Usage
@@ -20,7 +17,6 @@ sh -c "$(curl -fsSL https://gitee.com/liszt21/AuTools/raw/master/Setup/Linux/Ins
 - pyenv
 - nvm
 - docker
-- pcloud
 
 ### Windows
 - scoop
@@ -31,5 +27,4 @@ sh -c "$(curl -fsSL https://gitee.com/liszt21/AuTools/raw/master/Setup/Linux/Ins
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/Liszt21/AuTools/master/Setup/Mac/Install.sh)"
 # from Gitee
 sh -c "$(curl -fsSL https://gitee.com/liszt21/AuTools/raw/master/Setup/Mac/Install.sh)"
-
 ```

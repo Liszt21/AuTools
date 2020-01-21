@@ -202,6 +202,7 @@ finishsetup() {
         pyenv global 3.8.1
         pyenv rehash
 
+        pip install --upgrade pip
         pip install jupyterlab requests numpy scipy wakatime scapy scrapy bs4 flask
         
         nvm install 13
@@ -226,7 +227,7 @@ main() {
     installpyenv || echo "Install pyenv failed!!!\n"
     installnvm || echo "Install nvm failed!!!\n"
     installdocker || echo "Install docker failed!!!\n"
-    wslsetting || echo "Wsl setup failed!!!\n"
+    # wslsetting || echo "Wsl setup failed!!!\n"
     finishsetup
 }
 

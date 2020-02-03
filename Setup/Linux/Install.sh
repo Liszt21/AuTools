@@ -1,22 +1,78 @@
 #!/bin/sh
 
-set -e
-
-APP_HOME=${APP_HOME:-~/Apps}
-ENTRY=${ENTRY:-false}
-IS_ME=false
-
-# get shell
-shell="$1"
-if [ -z "$shell" ]; then
-  shell="$(ps c -p "$PPID" -o 'ucomm=' 2>/dev/null || true)"
-  shell="${shell##-}"
-  shell="${shell%% *}"
-  shell="$(basename "${shell:-$SHELL}")"
+if [ $APP_HOME ];then
+    ENTRY=true
 fi
+APP_HOME=${APP_HOME:-~/Apps}
+
+
+# Default settings
+VIA_GITEE=true
+IS_ME=false
+IN_WSL=false
+
+ALL_INSTALLED=false
+ZSH_INSTALLED=false
+PYENV_INSTALLED=false
+NVM_INSTALLED=false
+DOCKER_INSTALLED=false
+EMACS_INSTALLED=false
+
+PROXY=false
+
+setentry() {
+    echo "Setting entry"
+    if [ -z "$shell" ]; then
+        shell="$(ps c -p "$PPID" -o 'ucomm=' 2>/dev/null || true)"
+        shell="${shell##-}"
+        shell="${shell%% *}"
+        shell="$(basename "${shell:-$SHELL}")"
+    fi
+
+    echo APP_HOME=\${APP_HOME:-~/Apps} > $APP_HOME/entry
+    echo export APP_HOME >> $APP_HOME/entry
+
+    case "$shell" in
+    bash )
+        profile=~/.bashrc
+        ;;
+    zsh )
+        profile=~/.zshrc
+        ;;
+    ksh )
+        profile=~/.profile
+        ;;
+    fish )
+        profile=~/.config/fish/config.fish
+        ;;
+    * )
+        profile=~/.bashrc
+        ;;
+    esac
+    echo "source $APP_HOME/entry" >> $profile
+}
+
+setproxy() {
+    echo "------Setting proxy"
+    PROXY_HOST=127.0.0.1
+    if $IN_WSL;then
+        PROXY_HOST=$WIN_HOST
+    fi
+    export ALL_PROXY=socks5://$PROXY_HOST:1080
+    git config --global http.proxy socks5://$PROXY_HOST:1080
+    git config --global https.proxy socks5://$PROXY_HOST:1080
+    echo "\n"
+}
+
+setwsl() {
+    if [ ! -f $APP_HOME/wsl ];then
+        echo export source \$APP_HOME/wsl >> $APP_HOME/entry
+        echo export WIN_HOST="\`ipconfig.exe | grep -n4 WSL  | tail -n 1 | awk -F\":\" '{ print \$2 }'  | sed 's/^[ \\\r\\\n\\\t]*//;s/[ \\\r\\\n\\\t]*$//\`" > $APP_HOME/wsl
+    fi
+}
 
 check() {
-    # Checking
+    echo "Checking, please wait"
     if [ "liszt" = "$USER" ];then
         IS_ME=true
     fi
@@ -26,178 +82,249 @@ check() {
     if [ ! -d "$APP_HOME/cache" ];then
         mkdir "$APP_HOME/cache"
     fi
-    if ! $ENTRY ;then
-        echo APP_HOME=\${APP_HOME:-~/Apps} > $APP_HOME/entry
-        echo export APP_HOME >> $APP_HOME/entry
-        echo source \$APP_HOME/pyenv/entry >> $APP_HOME/entry
-        echo source \$APP_HOME/nvm/entry >> $APP_HOME/entry
+    if [ ! $ENTRY ];then
+        setentry
+    fi
 
-        case "$shell" in
-        bash )
-            profile=~/.bashrc
-            ;;
-        zsh )
-            profile=~/.zshrc
-            ;;
-        ksh )
-            profile=~/.profile
-            ;;
-        fish )
-            profile=~/.config/fish/config.fish
-            ;;
-        * )
-            profile=~/.bashrc
-            ;;
-        esac
-        echo "source $APP_HOME/entry" >> $profile
-        echo export ENTRY=true >> $profile
-
+    if [ -f ~/.zshrc ];then
+        ZSH_INSTALLED=true
+    fi
+    if [ -d "$APP_HOME/emacs" ];then
+        EMACS_INSTALLED=true
+    fi
+    if ! command -v pyenv 1>/dev/null 2>&1;then
+        PYENV_INSTALLED=true
+    fi
+    if ! command -v nvm 1>/dev/null 2>&1;then
+        NVM_INSTALLED=true
+    fi
+    if ! command -v docker 1>/dev/null 2>&1;then
+        DOCKER_INSTALLED=true
+    fi
+    if $ZSH_INSTALLED && $NVM_INSTALLED && $PYENV_INSTALLED && $DOCKER_INSTALLED && $EMACS_INSTALLED;then
+        ALL_INSTALLED=true
+    fi
+    if [ $WSL_DISTRO_NAME ];then
+        IN_WSL=true
+        setwsl
+    fi
+    ping -w 1 github.com >/dev/null
+    if [  $? -eq 0  ];then
+        VIA_GITEE=false
     fi
 }
 
-preinstall() {
-    echo "Setting environment"
+menu() {
+    echo "System auto setup --- Linux"
+    echo "Commands:(default 0)"
+    echo "  0: Install all & exit"
+    echo "  1: Install zsh            Installed:"$ZSH_INSTALLED
+    echo "  2: Install pyenv          Installed:"$PYENV_INSTALLED
+    echo "  3: Install nvm            Installed:"$NVM_INSTALLED
+    echo "  4: Install emacs          Installed:"$EMACS_INSTALLED
+    echo "  5: Install docker         Installed:"$DOCKER_INSTALLED
+    echo "  8: Set proxy"
+    echo "  9: Exit\n"
+}
+
+install_essential() {
+    echo "------Install essential"
     sudo apt-get install git wget curl vim screen -y
+    echo "\n"
 }
 
-installzsh() {
-    echo "Install zsh & oh-my-zsh"
-    if [ ! -f ~/.zshrc ];then
-        echo "Remember to exit from zsh to continue"
-        sudo apt-get install zsh -y
-        sh -c "$(curl -fsSL https://gitee.com/mirrors/oh-my-zsh/raw/master/tools/install.sh)"
-        echo "source $APP_HOME/entry" >> ~/.zshrc
-    fi
+install_zsh() {
+    echo "------Installing zsh & oh-my-zsh"
+    echo "Remember to exit from zsh to continue"
+    sudo apt-get install zsh -y
+    sh -c "$(curl -fsSL https://gitee.com/mirrors/oh-my-zsh/raw/master/tools/install.sh)"
+    echo "source $APP_HOME/entry" >> ~/.zshrc
+    echo "\n"
 }
 
-installemacs() {
-    echo "Installing Emacs"
-    # Check
-    if [ ! -d "$APP_HOME/emacs" ];then
-        if [ ! -d "$APP_HOME/cache/emacs" ];then
-            echo "Downloading source"
-            cd $APP_HOME/cache
-            wget http://mirrors.ustc.edu.cn/gnu/emacs/emacs-26.3.tar.gz
-            tar -xvzf emacs-26.3.tar.gz
-            mv ./emacs-26.3 emacs
-        fi
-        # Install dependencies
-        sudo apt-get update
-        sudo apt-get install autoconf -y
-        sudo apt-get install build-essential automake texinfo libjpeg-dev libncurses5-dev libtiff5-dev libgif-dev libpng-dev libxpm-dev libgtk-3-dev libgnutls28-dev -y
-        # Compile
-        echo "Compiling Emacs"
-        cd $APP_HOME/cache/emacs
-        ./autogen.sh
-        ./configure --prefix="$APP_HOME/emacs" --with-mailutils --with-modules
-        make
-        # Install emacs
-        make install
+install_pyenv() {
+    echo "Installing pyenv"
+    if $VIA_GITEE;then
+        PYENV_REPO_ROOT=https://github.com/pyenv
     else
-        echo "Emacs is installed"
+        PYENV_REPO_ROOT=https://gitee.com/mirrors
     fi
-    echo "Install spacemacs"
+    failed_checkout() {
+        echo "Failed to git clone $1"
+        exit -1
+    }
+    checkout() {
+        [ -d "$2" ] || git clone --depth 1 "$1" "$2" || failed_checkout "$1"
+    }
+    checkout "$PYENV_REPO_ROOT/pyenv.git"            "$APP_HOME/pyenv"
+    if ! $VIA_GITEE;then
+        checkout "$PYENV_REPO_ROOT/pyenv-doctor.git"     "$APP_HOME/pyenv/plugins/pyenv-doctor"
+        checkout "$PYENV_REPO_ROOT/pyenv-installer.git"  "$APP_HOME/pyenv/plugins/pyenv-installer"
+        checkout "$PYENV_REPO_ROOT/pyenv-update.git"     "$APP_HOME/pyenv/plugins/pyenv-update"
+        checkout "$PYENV_REPO_ROOT/pyenv-virtualenv.git" "$APP_HOME/pyenv/plugins/pyenv-virtualenv"
+        checkout "$PYENV_REPO_ROOT/pyenv-which-ext.git"  "$APP_HOME/pyenv/plugins/pyenv-which-ext"
+    fi
+    sudo apt-get install zlibc zlib1g zlib1g-dev libffi-dev libssl-dev libbz2-dev libreadline-dev libsqlite3-dev tk-dev -y
+
+    export PYENV_ROOT="$APP_HOME/pyenv"
+    export PATH="$PYENV_ROOT/bin:$PATH"
+    eval "$(pyenv init -)"
+
+    echo "export PYENV_ROOT=\"\$APP_HOME/pyenv\"" > $APP_HOME/pyenv/entry
+    echo "export PATH=\"\$PYENV_ROOT/bin:\$PATH\"" >> $APP_HOME/pyenv/entry
+    echo "eval \"\$(pyenv init -)\"" >> $APP_HOME/pyenv/entry
+    # echo "eval \"\$(pyenv virtualenv-init -)\"" >> $APP_HOME/pyenv/entry
+}
+
+install_nvm() {
+    echo "Installing nvm"
+    if [ ! -d "$APP_HOME/nvm" ];then
+        git clone https://gitee.com/mirrors/nvm.git $APP_HOME/nvm
+    fi
+    NVM_DIR=$APP_HOME/nvm
+    echo export NVM_DIR=$APP_HOME/nvm > $APP_HOME/nvm/entry
+    echo "[ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\"  # This loads nvm" >> $APP_HOME/nvm/entry
+    echo "[ -s \"\$NVM_DIR/bash_completion\" ] && \. \"\$NVM_DIR/bash_completion\"" >> $APP_HOME/nvm/entry
+
+    export NVM_DIR=/home/liszt/Apps/nvm
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+}
+
+install_docker() {
+    echo "Installing docker"
+    sudo sh -c "$(curl -fsSL https://get.docker.com)"
+    sudo usermod -aG docker $USER
+}
+
+install_emacs() {
+    if $VIA_GITEE;then
+        SPACEMACS_REPO=https://gitee.com/mirrors/spacemacs.git
+        SPACEMACS_CONF_REPO=https://gitee.com/Liszt21/MySpacemacs.git
+    else
+        SPACEMACS_REPO=https://github.com/syl20bnr/spacemacs.git
+        SPACEMACS_CONF_REPO=https://github.com/Liszt21/.spacemacs.d.git
+    fi
+    echo "Installing emacs"
+    if [ ! -d "$APP_HOME/cache/emacs" ];then
+        echo "Downloading source"
+        cd $APP_HOME/cache
+        wget http://mirrors.ustc.edu.cn/gnu/emacs/emacs-26.3.tar.gz
+        tar -xvzf emacs-26.3.tar.gz
+        mv ./emacs-26.3 emacs
+    fi
+    # Install dependencies
+    sudo apt-get update
+    sudo apt-get install autoconf -y
+    sudo apt-get install build-essential automake texinfo libjpeg-dev libncurses5-dev libtiff5-dev libgif-dev libpng-dev libxpm-dev libgtk-3-dev libgnutls28-dev -y
+    # Compile
+    echo "Compiling Emacs"
+    cd $APP_HOME/cache/emacs
+    ./autogen.sh
+    ./configure --prefix="$APP_HOME/emacs" --with-mailutils --with-modules
+    make
+    
+    make install
     if [ ! -e ~/.emacs.d/spacemacs.mk ];then
         rm -rf ~/.emacs.d
-        # git clone -b develop https://github.com/syl20bnr/spacemacs ~/.emacs.d
-        git clone -b develop https://gitee.com/mirrors/spacemacs ~/.emacs.d
+        git clone -b develop $SPACEMACS_REPO ~/.emacs.d
     fi
-
-    if ! command -v emacs 1>/dev/null 2>&1;then
-        echo "Adding emacs to PATH"
-        echo "export PATH=\"$APP_HOME/emacs/bin:\$PATH\"" >> $APP_HOME/entry
-    fi
-}
-
-installpyenv() {
-    echo "Installing python"
-    if ! command -v pyenv 1>/dev/null 2>&1;then
-        if [ ! -d "$APP_HOME/pyenv" ];then
-            # curl https://pyenv.run | bash
-            failed_checkout() {
-                echo "Failed to git clone $1"
-                exit -1
-            }
-            checkout() {
-                [ -d "$2" ] || git clone --depth 1 "$1" "$2" || failed_checkout "$1"
-            }
-
-            checkout "https://github.com/pyenv/pyenv.git"            "$APP_HOME/pyenv"
-            checkout "https://github.com/pyenv/pyenv-doctor.git"     "$APP_HOME/pyenv/plugins/pyenv-doctor"
-            checkout "https://github.com/pyenv/pyenv-installer.git"  "$APP_HOME/pyenv/plugins/pyenv-installer"
-            checkout "https://github.com/pyenv/pyenv-update.git"     "$APP_HOME/pyenv/plugins/pyenv-update"
-            checkout "https://github.com/pyenv/pyenv-virtualenv.git" "$APP_HOME/pyenv/plugins/pyenv-virtualenv"
-            checkout "https://github.com/pyenv/pyenv-which-ext.git"  "$APP_HOME/pyenv/plugins/pyenv-which-ext"
-
-            sudo apt-get install zlibc zlib1g zlib1g-dev libffi-dev libssl-dev libbz2-dev libreadline-dev libsqlite3-dev tk-dev -y
-
-            export PYENV_ROOT="$APP_HOME/pyenv"
-            export PATH="$PYENV_ROOT/bin:$PATH"
-            eval "$(pyenv init -)"
-            
-        fi
-        echo "export PYENV_ROOT=\"\$APP_HOME/pyenv\"" > $APP_HOME/pyenv/entry
-        echo "export PATH=\"\$PYENV_ROOT/bin:\$PATH\"" >> $APP_HOME/pyenv/entry
-        echo "eval \"\$(pyenv init -)\"" >> $APP_HOME/pyenv/entry
-        # echo "eval \"\$(pyenv virtualenv-init -)\"" >> $APP_HOME/pyenv/entry
-    else
-        echo "Pyenv is already installed"
-    fi
-}
-
-installnvm() {
-    echo "Installing nvm"
-    if ! command -v nvm 1>/dev/null 2>&1;then
-        if [ ! -d "$APP_HOME/nvm" ];then
-            git clone https://gitee.com/mirrors/nvm.git $APP_HOME/nvm
-        fi
-        NVM_DIR=$APP_HOME/nvm
-        echo export NVM_DIR=$APP_HOME/nvm > $APP_HOME/nvm/entry
-        echo "[ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\"  # This loads nvm" >> $APP_HOME/nvm/entry
-        echo "[ -s \"\$NVM_DIR/bash_completion\" ] && \. \"\$NVM_DIR/bash_completion\"" >> $APP_HOME/nvm/entry
-
-        export NVM_DIR=/home/liszt/Apps/nvm
-        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-        [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-    fi
-}
-
-installdocker() {
-    echo "Installing docker"
-    if ! command -v docker 1>/dev/null 2>&1;then
-        sudo sh -c "$(curl -fsSL https://get.docker.com)"
-        sudo usermod -aG docker $USER
-    else
-        echo "Docker is already installed"
-    fi
-}
-
-wslsetting() {
-    if [ WSL_DISTRO_NAME ];then
-        echo "In wsl"
-        echo "Create symbolic link of fonts"
-        sudo ln -s /mnt/c/Windows/Fonts/* /usr/share/fonts/
-    fi
-}
-
-finishsetup() {
-    echo "Finishing"
-    if [ "$IS_ME" ];then
-        if [ WSL_DISTRO_NAME ];then
-            ln -s /mnt/c/Liszt/Notes ~/Notes
-            ln -s /mnt/c/Liszt/Projects ~/Projects
-            ln -s /mnt/c/Share ~/Share
-            if [ -d "$HOME/.spacemacs.d" ];then
-                rm -rf "$HOME/.spacemacs.d"
-            fi
-            ln -s /mnt/c/Users/liszt/AppData/Roaming/.spacemacs.d ~/.spacemacs.d
-        fi
-
-        if [ ! -d ~/.spacemacs.d/layers/liszt/ ];then
+    if $IS_ME;then
+        if [ ! -d ~/.spacemacs.d/layers/liszt ];then
             rm -rf ~/.spacemacs.d
-            git clone https://github.com/Liszt21/.spacemacs.d.git ~/.spacemacs.d
+            if $IN_WSL;then
+                ln -s /mnt/c/Users/liszt/AppData/Roaming/.spacemacs.d ~/.spacemacs.d
+            else
+                git clone $SPACEMACS_CONF_REPO ~/.spacemacs.d
+            fi
         fi
+    fi
+}
 
+main() {
+    check
+    install_essential >> $APP_HOME/log 2>&1
+    menu
+    while true
+    do
+        INSTALL_ALL=false
+        INSTALL_ZSH=false
+        INSTALL_PYENV=false
+        INSTALL_NVM=false
+        INSTALL_EMACS=false
+        INSTALL_DOCKER=false
+        read option
+        case "$option" in
+            "1" )
+                INSTALL_ZSH=true
+                ;;
+            "2" )
+                INSTALL_PYENV=true
+                ;;
+            "3" )
+                INSTALL_NVM=true
+                ;;
+            "4" )
+                INSTALL_EMACS=true
+                ;;
+            "5" )
+                INSTALL_DOCKER=true
+                ;;
+            "8" )
+                PROXY=true
+                setproxy
+                ;;
+            "9" )
+                exit
+                ;;
+            * )
+                INSTALL_ALL=true
+                ;;
+        esac
+        clear
+        menu
+        if $ALL_INSTALLED;then
+            echo $ALL_INSTALLED
+            echo "All installed, exit"
+            exit
+        fi
+        if $INSTALL_ALL || $INSTALL_ZSH;then
+            if ! $ZSH_INSTALLED;then
+                install_zsh
+            else
+                echo "Zsh is already installed!"
+            fi
+        fi
+        if $INSTALL_ALL || $INSTALL_PYENV;then
+            if ! $PYENV_INSTALLED;then
+                install_pyenv
+            else
+                echo "Pyenv is already installed!"
+            fi
+        fi
+        if $INSTALL_ALL || $INSTALL_NVM;then
+            if ! $NVM_INSTALLED;then
+                install_nvm
+            else
+                echo "Nvm is already installed!"
+            fi
+        fi
+        if $INSTALL_ALL || $INSTALL_EMACS;then
+            if ! $EMACS_INSTALLED;then
+                install_emacs
+            else
+                echo "Emacs is already installed!"
+            fi
+        fi
+        if $INSTALL_ALL || $INSTALL_DOCKER;then
+            if ! $DOCKER_INSTALLED;then
+                install_docker
+            else
+                echo "Docker is already installed!"
+            fi
+        fi
+    done
+    if $IS_ME;then
         pyenv install 3.8.1
         pyenv global 3.8.1
         pyenv rehash
@@ -214,21 +341,6 @@ finishsetup() {
 
         yarn global add @vue/cli
     fi
-    echo "Using 'source $APP_HOME/entry' to reload"
-}
-
-main() {
-    echo "System auto setup --- Linux"
-    check
-    preinstall
-    
-    installzsh || echo "Install zsh failed!!!\n"
-    installemacs || echo "Install emacs failed!!!\n"
-    installpyenv || echo "Install pyenv failed!!!\n"
-    installnvm || echo "Install nvm failed!!!\n"
-    installdocker || echo "Install docker failed!!!\n"
-    # wslsetting || echo "Wsl setup failed!!!\n"
-    finishsetup
 }
 
 main

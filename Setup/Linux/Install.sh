@@ -129,6 +129,7 @@ menu() {
 
 install_essential() {
     echo "------Install essential"
+    sudo apt-get update
     sudo apt-get install git wget curl vim screen -y
     echo "\n"
 }

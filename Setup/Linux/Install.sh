@@ -244,8 +244,8 @@ install_emacs() {
 
 main() {
     check
-    install_essential >> $APP_HOME/log 2>&1
     menu
+    install_essential >> $APP_HOME/log
     while true
     do
         INSTALL_ALL=false

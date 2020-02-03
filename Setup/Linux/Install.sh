@@ -29,8 +29,9 @@ setentry() {
         shell="$(basename "${shell:-$SHELL}")"
     fi
 
-    echo APP_HOME=\${APP_HOME:-~/Apps} > $APP_HOME/entry
-    echo export APP_HOME >> $APP_HOME/entry
+    echo source \$APP_HOME/pyenv/entry >> $APP_HOME/entry
+    echo source \$APP_HOME/nvm/pyenv >> $APP_HOME/entry
+    echo export PATH="\$PATH:\$APP_HOME/emacs/bin" >> $APP_HOME/entry
 
     case "$shell" in
     bash )
@@ -49,7 +50,8 @@ setentry() {
         profile=~/.bashrc
         ;;
     esac
-    echo "source $APP_HOME/entry" >> $profile
+    echo "export APP_HOME=~/Apps" >> $profile
+    echo "source \$APP_HOME/entry" >> $profile
 }
 
 setproxy() {

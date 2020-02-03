@@ -258,7 +258,7 @@ main() {
     install_essential >> $APP_HOME/log
     while true
     do
-        emnu
+        menu
         INSTALL_ALL=false
         INSTALL_ZSH=false
         INSTALL_PYENV=false

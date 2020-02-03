@@ -138,6 +138,10 @@ install_zsh() {
     echo "------Installing zsh & oh-my-zsh"
     echo "Remember to exit from zsh to continue"
     sudo apt-get install zsh -y
+    if $VIA_GITEE;then
+        REMOTE=https://gitee.com/mirrors/oh-my-zsh.git
+    fi
+    RUNZSH=no
     sh -c "$(curl -fsSL https://gitee.com/mirrors/oh-my-zsh/raw/master/tools/install.sh)"
     echo "source $APP_HOME/entry" >> ~/.zshrc
     echo "\n"
@@ -146,9 +150,9 @@ install_zsh() {
 install_pyenv() {
     echo "Installing pyenv"
     if $VIA_GITEE;then
-        PYENV_REPO_ROOT=https://github.com/pyenv
-    else
         PYENV_REPO_ROOT=https://gitee.com/mirrors
+    else
+        PYENV_REPO_ROOT=https://github.com/pyenv
     fi
     failed_checkout() {
         echo "Failed to git clone $1"

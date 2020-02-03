@@ -71,8 +71,7 @@ setwsl() {
     fi
 }
 
-check() {
-    echo "Checking, please wait"
+config() {
     if [ "liszt" = "$USER" ];then
         IS_ME=true
     fi
@@ -85,7 +84,10 @@ check() {
     if [ ! $ENTRY ];then
         setentry
     fi
+}
 
+check() {
+    echo "Checking, please wait"
     if [ -f ~/.zshrc ];then
         ZSH_INSTALLED=true
     fi
@@ -144,7 +146,7 @@ install_zsh() {
     RUNZSH=no
     sh -c "$(curl -fsSL https://gitee.com/mirrors/oh-my-zsh/raw/master/tools/install.sh)"
     echo "source $APP_HOME/entry" >> ~/.zshrc
-    echo "\n"
+    echo "Zsh install finished\n"
 }
 
 install_pyenv() {
@@ -179,6 +181,7 @@ install_pyenv() {
     echo "export PATH=\"\$PYENV_ROOT/bin:\$PATH\"" >> $APP_HOME/pyenv/entry
     echo "eval \"\$(pyenv init -)\"" >> $APP_HOME/pyenv/entry
     # echo "eval \"\$(pyenv virtualenv-init -)\"" >> $APP_HOME/pyenv/entry
+    echo "Pyenv install finished\n"
 }
 
 install_nvm() {
@@ -194,12 +197,14 @@ install_nvm() {
     export NVM_DIR=/home/liszt/Apps/nvm
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
     [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+    echo "Nvm install finished\n"
 }
 
 install_docker() {
     echo "Installing docker"
     sudo sh -c "$(curl -fsSL https://get.docker.com)"
     sudo usermod -aG docker $USER
+    echo "Docker install finished\n"
 }
 
 install_emacs() {
@@ -244,14 +249,16 @@ install_emacs() {
             fi
         fi
     fi
+    echo "Emacs install finished\n"
 }
 
 main() {
+    config
     check
     install_essential >> $APP_HOME/log
-    menu
     while true
     do
+        emnu
         INSTALL_ALL=false
         INSTALL_ZSH=false
         INSTALL_PYENV=false
@@ -286,12 +293,10 @@ main() {
                 INSTALL_ALL=true
                 ;;
         esac
-        clear
-        menu
         if $ALL_INSTALLED;then
             echo $ALL_INSTALLED
             echo "All installed, exit"
-            exit
+            break
         fi
         if $INSTALL_ALL || $INSTALL_ZSH;then
             if ! $ZSH_INSTALLED;then
@@ -327,6 +332,11 @@ main() {
             else
                 echo "Docker is already installed!"
             fi
+        fi
+        check
+        if $ALL_INSTALLED;then
+            echo "All apps were installed"
+            break
         fi
     done
     if $IS_ME;then

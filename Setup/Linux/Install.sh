@@ -29,9 +29,8 @@ setentry() {
         shell="$(basename "${shell:-$SHELL}")"
     fi
 
-    echo source \$APP_HOME/pyenv/entry >> $APP_HOME/entry
-    echo source \$APP_HOME/nvm/pyenv >> $APP_HOME/entry
-    echo export PATH="\$PATH:\$APP_HOME/emacs/bin" >> $APP_HOME/entry
+    echo "APP_HOME=\${APP_HOME:-~/Apps}" > $APP_HOME/entry
+    echo "export APP_HOME" >> $APP_HOME/entry
 
     case "$shell" in
     bash )
@@ -50,8 +49,11 @@ setentry() {
         profile=~/.bashrc
         ;;
     esac
-    echo "export APP_HOME=~/Apps" >> $profile
     echo "source \$APP_HOME/entry" >> $profile
+
+    echo "source \$APP_HOME/pyenv/entry" >> $APP_HOME/entry
+    echo "source \$APP_HOME/nvm/pyenv" >> $APP_HOME/entry
+    echo "export PATH=\"\$PATH:\$APP_HOME/emacs/bin\"" >> $APP_HOME/entry
 }
 
 setproxy() {
@@ -68,7 +70,7 @@ setproxy() {
 
 setwsl() {
     if [ ! -f $APP_HOME/wsl ];then
-        echo export source \$APP_HOME/wsl >> $APP_HOME/entry
+        echo source \$APP_HOME/wsl >> $APP_HOME/entry
         echo export WIN_HOST="\`ipconfig.exe | grep -n4 WSL  | tail -n 1 | awk -F\":\" '{ print \$2 }'  | sed 's/^[ \\\r\\\n\\\t]*//;s/[ \\\r\\\n\\\t]*$//\`" > $APP_HOME/wsl
     fi
 }
@@ -179,6 +181,7 @@ install_pyenv() {
     export PATH="$PYENV_ROOT/bin:$PATH"
     eval "$(pyenv init -)"
 
+    #Setup entry
     echo "export PYENV_ROOT=\"\$APP_HOME/pyenv\"" > $APP_HOME/pyenv/entry
     echo "export PATH=\"\$PYENV_ROOT/bin:\$PATH\"" >> $APP_HOME/pyenv/entry
     echo "eval \"\$(pyenv init -)\"" >> $APP_HOME/pyenv/entry
@@ -191,8 +194,8 @@ install_nvm() {
     if [ ! -d "$APP_HOME/nvm" ];then
         git clone https://gitee.com/mirrors/nvm.git $APP_HOME/nvm
     fi
-    NVM_DIR=$APP_HOME/nvm
-    echo export NVM_DIR=$APP_HOME/nvm > $APP_HOME/nvm/entry
+    # Setup entry
+    echo "export NVM_DIR=\$APP_HOME/nvm" > $APP_HOME/nvm/entry
     echo "[ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\"  # This loads nvm" >> $APP_HOME/nvm/entry
     echo "[ -s \"\$NVM_DIR/bash_completion\" ] && \. \"\$NVM_DIR/bash_completion\"" >> $APP_HOME/nvm/entry
 

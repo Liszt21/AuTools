@@ -52,7 +52,7 @@ setentry() {
     echo "source \$APP_HOME/entry" >> $profile
 
     echo "source \$APP_HOME/pyenv/entry" >> $APP_HOME/entry
-    echo "source \$APP_HOME/nvm/pyenv" >> $APP_HOME/entry
+    echo "source \$APP_HOME/nvm/entry" >> $APP_HOME/entry
     echo "export PATH=\"\$PATH:\$APP_HOME/emacs/bin\"" >> $APP_HOME/entry
 }
 

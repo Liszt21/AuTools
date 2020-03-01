@@ -145,9 +145,9 @@ install_zsh() {
     echo "Remember to exit from zsh to continue"
     sudo apt-get install zsh -y
     if $VIA_GITEE;then
-        REMOTE=https://gitee.com/mirrors/oh-my-zsh.git
+        export REMOTE=https://gitee.com/mirrors/oh-my-zsh.git
     fi
-    RUNZSH=no
+    export RUNZSH=no
     sh -c "$(curl -fsSL https://gitee.com/mirrors/oh-my-zsh/raw/master/tools/install.sh)"
     echo "source $APP_HOME/entry" >> ~/.zshrc
     echo "Zsh install finished\n"

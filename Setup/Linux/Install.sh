@@ -1,8 +1,20 @@
 #!/bin/sh
 
+red='\e[91m'
+green='\e[92m'
+yellow='\e[93m'
+magenta='\e[95m'
+cyan='\e[96m'
+none='\e[0m'
+
 if [ $APP_HOME ];then
     ENTRY=true
 fi
+
+if [[ $(command -v yum) ]]; then
+	CMD="yum"
+fi
+
 APP_HOME=${APP_HOME:-~/Apps}
 
 
@@ -49,7 +61,7 @@ setentry() {
         profile=~/.bashrc
         ;;
     esac
-    echo "source \$APP_HOME/entry" >> $profile
+    echo "source $APP_HOME/entry" >> $profile
 
     echo "source \$APP_HOME/pyenv/entry" >> $APP_HOME/entry
     echo "source \$APP_HOME/nvm/entry" >> $APP_HOME/entry
@@ -123,7 +135,7 @@ check() {
 menu() {
     echo "System auto setup --- Linux"
     echo "Commands:(default 0)"
-    echo "  0: Install all & exit"
+    echo "  0: Install badic & exit"
     echo "  1: Install zsh            Installed:"$ZSH_INSTALLED
     echo "  2: Install pyenv          Installed:"$PYENV_INSTALLED
     echo "  3: Install nvm            Installed:"$NVM_INSTALLED
@@ -135,15 +147,24 @@ menu() {
 
 install_essential() {
     echo "------Install essential"
-    sudo apt-get update
-    sudo apt-get install git wget curl vim screen -y
+    if [ "$CMD" = "yum" ]; then
+        sudo yum update -y
+        sudo yum install git wget curl vim screen -y
+    else
+        sudo apt-get update
+        sudo apt-get install git wget curl vim screen -y
+    fi
     echo "\n"
 }
 
 install_zsh() {
     echo "------Installing zsh & oh-my-zsh"
     echo "Remember to exit from zsh to continue"
-    sudo apt-get install zsh -y
+    if [ "$CMD" = "yum" ]; then
+        sudo yum install zsh -y
+    else
+        sudo apt-get install zsh -y
+    fi
     if $VIA_GITEE;then
         export REMOTE=https://gitee.com/mirrors/oh-my-zsh.git
     fi
@@ -175,7 +196,12 @@ install_pyenv() {
         checkout "$PYENV_REPO_ROOT/pyenv-virtualenv.git" "$APP_HOME/pyenv/plugins/pyenv-virtualenv"
         checkout "$PYENV_REPO_ROOT/pyenv-which-ext.git"  "$APP_HOME/pyenv/plugins/pyenv-which-ext"
     fi
-    sudo apt-get install zlibc zlib1g zlib1g-dev libffi-dev libssl-dev libbz2-dev libreadline-dev libsqlite3-dev tk-dev -y
+    if [ "$CMD" = "yum" ]; then
+        sudo yum install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel -y
+
+    else
+        sudo apt-get install zlibc zlib1g zlib1g-dev libffi-dev libssl-dev libbz2-dev libreadline-dev libsqlite3-dev tk-dev -y
+    fi
 
     export PYENV_ROOT="$APP_HOME/pyenv"
     export PATH="$PYENV_ROOT/bin:$PATH"
@@ -229,9 +255,25 @@ install_emacs() {
         mv ./emacs-26.3 emacs
     fi
     # Install dependencies
-    sudo apt-get update
-    sudo apt-get install autoconf -y
-    sudo apt-get install build-essential automake texinfo libjpeg-dev libncurses5-dev libtiff5-dev libgif-dev libpng-dev libxpm-dev libgtk-3-dev libgnutls28-dev -y
+
+    if [ "$CMD" = "yum" ]; then
+        sudo yum -y groupinstall “Development Tools”
+        sudo yum -y install gtk+-devel gtk2-devel
+        sudo yum -y install libXpm-devel
+        sudo yum -y install libpng-devel
+        sudo yum -y install giflib-devel
+        sudo yum -y install libtiff-devel libjpeg-devel
+        sudo yum -y install ncurses-devel
+        sudo yum -y install gpm-devel dbus-devel dbus-glib-devel dbus-python
+        sudo yum -y install GConf2-devel pkgconfig
+        sudo yum -y install libXft-devel
+    else
+        sudo apt-get update
+        sudo apt-get install autoconf -y
+        sudo apt-get install build-essential automake texinfo libjpeg-dev libncurses5-dev libtiff5-dev libgif-dev libpng-dev libxpm-dev libgtk-3-dev libgnutls28-dev -y
+    fi
+
+    
     # Compile
     echo "Compiling Emacs"
     cd $APP_HOME/cache/emacs
@@ -354,10 +396,15 @@ main() {
         
         nvm install 13
 
-        curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-        echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-        sudo apt-get update && sudo apt-get install yarn -y
-        sudo rm /etc/apt/sources.list.d/yarn.list
+        if [ "$CMD" = "yum" ]; then
+            curl --silent --location https://dl.yarnpkg.com/rpm/yarn.repo | sudo tee /etc/yum.repos.d/yarn.repo
+            sudo yum install yarn -y
+        else
+            curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+            echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+            sudo apt-get update && sudo apt-get install yarn -y
+            sudo rm /etc/apt/sources.list.d/yarn.list
+        fi
 
         yarn global add @vue/cli
     fi

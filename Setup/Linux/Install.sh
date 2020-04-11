@@ -110,11 +110,17 @@ check() {
     if [ -d "$APP_HOME/emacs" ];then
         EMACS_INSTALLED=true
     fi
-    if command -v pyenv 1>/dev/null 2>&1;then
-        PYENV_INSTALLED=true
-    fi
-    if command -v nvm 1>/dev/null 2>&1;then
+    # if command -v pyenv 1>/dev/null 2>&1;then
+    #     PYENV_INSTALLED=true
+    # fi
+    # if command -v nvm 1>/dev/null 2>&1;then
+    #     NVM_INSTALLED=true
+    # fi
+    if [ -d "$APP_HOME/nvm" ];then
         NVM_INSTALLED=true
+    fi
+    if [ -d "$APP_HOME/pyenv" ];then
+        PYENV_INSTALLED=true
     fi
     if command -v docker 1>/dev/null 2>&1;then
         DOCKER_INSTALLED=true

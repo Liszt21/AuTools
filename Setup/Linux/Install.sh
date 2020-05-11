@@ -83,7 +83,8 @@ setproxy() {
 setwsl() {
     if [ ! -f $APP_HOME/wsl ];then
         echo source \$APP_HOME/wsl >> $APP_HOME/entry
-        echo export WIN_HOST="\`ipconfig.exe | grep -n4 WSL  | tail -n 1 | awk -F\":\" '{ print \$2 }'  | sed 's/^[ \\\r\\\n\\\t]*//;s/[ \\\r\\\n\\\t]*$//\`" > $APP_HOME/wsl
+        echo export "WIN_HOST=\$(cat /etc/resolv.conf | grep nameserver | awk '{print \$2; exit;}')" > $APP_HOME/wsl
+        echo export DISPLAY=\$WIN_HOST:0 >> $APP_HOME/wsl
     fi
 }
 

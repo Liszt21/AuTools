@@ -13,9 +13,10 @@ if [ $APP_HOME ];then
 fi
 APP_HOME=${APP_HOME:-~/Apps}
 
-if [[ $(command -v yum) ]]; then
+CMD="apt-get"
+if $(command -v yum); then
 	CMD="yum"
-elif [[ $(command -v pacman) ]]; then
+elif $(command -v pacman); then
     CMD="pacman"
 fi
 
@@ -261,7 +262,7 @@ install_emacs() {
     if [ "$CMD" = "yum" ]; then
         sudo yum -y groupinstall “Development Tools”
         sudo yum -y install gtk+-devel gtk2-devel libXpm-devel libpng-devel giflib-devel libtiff-devel libjpeg-devel ncurses-devel gpm-devel dbus-devel dbus-glib-devel dbus-python GConf2-devel pkgconfig libXft-devel
-    if [ "$CMD" = "pacman" ];then
+    elif [ "$CMD" = "pacman" ];then
         sudo pacman -S emacs
     else
         sudo apt-get update
@@ -301,6 +302,7 @@ install_emacs() {
         fi
     fi
     echo "Emacs install finished\n"
+
 }
 
 main() {

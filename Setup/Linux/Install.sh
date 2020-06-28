@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# Metadata
 red='\e[91m'
 green='\e[92m'
 yellow='\e[93m'
@@ -10,27 +11,27 @@ none='\e[0m'
 if [ $APP_HOME ];then
     ENTRY=true
 fi
+APP_HOME=${APP_HOME:-~/Apps}
 
 if [[ $(command -v yum) ]]; then
 	CMD="yum"
+elif [[ $(command -v pacman) ]]; then
+    CMD="pacman"
 fi
-
-APP_HOME=${APP_HOME:-~/Apps}
-
 
 # Default settings
 VIA_GITEE=true
 IS_ME=false
 IN_WSL=false
+PROXY=false
 
+#check
 ALL_INSTALLED=false
 ZSH_INSTALLED=false
 PYENV_INSTALLED=false
 NVM_INSTALLED=false
 DOCKER_INSTALLED=false
 EMACS_INSTALLED=false
-
-PROXY=false
 
 setentry() {
     echo "Setting entry"
@@ -45,9 +46,6 @@ setentry() {
     echo "export APP_HOME" >> $APP_HOME/entry
 
     case "$shell" in
-    bash )
-        profile=~/.bashrc
-        ;;
     zsh )
         profile=~/.zshrc
         ;;
@@ -111,12 +109,6 @@ check() {
     if [ -d "$APP_HOME/emacs" ];then
         EMACS_INSTALLED=true
     fi
-    # if command -v pyenv 1>/dev/null 2>&1;then
-    #     PYENV_INSTALLED=true
-    # fi
-    # if command -v nvm 1>/dev/null 2>&1;then
-    #     NVM_INSTALLED=true
-    # fi
     if [ -d "$APP_HOME/nvm" ];then
         NVM_INSTALLED=true
     fi
@@ -157,6 +149,10 @@ install_essential() {
     if [ "$CMD" = "yum" ]; then
         sudo yum update -y
         sudo yum install git wget curl vim screen -y
+    elif [ "$CMD" = "pacman" ]; then
+        sudo pacman-key --init
+        sudo pacman-key --populate
+        sudo pacman -S git wget zsh vim screen 
     else
         sudo apt-get update
         sudo apt-get install git wget curl vim screen -y
@@ -206,6 +202,8 @@ install_pyenv() {
     if [ "$CMD" = "yum" ]; then
         sudo yum install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel -y
         sudo yum install libffi-devel -y
+    elif [ "$CMD" = "pacman" ]; then
+        sudo pacman -S zlibc 
     else
         sudo apt-get install zlibc zlib1g zlib1g-dev libffi-dev libssl-dev libbz2-dev libreadline-dev libsqlite3-dev tk-dev -y
     fi
@@ -240,7 +238,11 @@ install_nvm() {
 
 install_docker() {
     echo "Installing docker"
-    sudo sh -c "$(curl -fsSL https://get.docker.com)"
+    if [ "$CMD" = "pacman" ];then
+        sudo pacman -S docker
+    else
+        sudo sh -c "$(curl -fsSL https://get.docker.com)"
+    fi
     sudo usermod -aG docker $USER
     echo "Docker install finished\n"
 }
@@ -254,41 +256,36 @@ install_emacs() {
         SPACEMACS_CONF_REPO=https://github.com/Liszt21/.spacemacs.d.git
     fi
     echo "Installing emacs"
-    if [ ! -d "$APP_HOME/cache/emacs" ];then
-        echo "Downloading source"
-        cd $APP_HOME/cache
-        wget http://mirrors.ustc.edu.cn/gnu/emacs/emacs-26.3.tar.gz
-        tar -xvzf emacs-26.3.tar.gz
-        mv ./emacs-26.3 emacs
-    fi
-    # Install dependencies
 
+    # Install dependencies
     if [ "$CMD" = "yum" ]; then
         sudo yum -y groupinstall “Development Tools”
-        sudo yum -y install gtk+-devel gtk2-devel
-        sudo yum -y install libXpm-devel
-        sudo yum -y install libpng-devel
-        sudo yum -y install giflib-devel
-        sudo yum -y install libtiff-devel libjpeg-devel
-        sudo yum -y install ncurses-devel
-        sudo yum -y install gpm-devel dbus-devel dbus-glib-devel dbus-python
-        sudo yum -y install GConf2-devel pkgconfig
-        sudo yum -y install libXft-devel
+        sudo yum -y install gtk+-devel gtk2-devel libXpm-devel libpng-devel giflib-devel libtiff-devel libjpeg-devel ncurses-devel gpm-devel dbus-devel dbus-glib-devel dbus-python GConf2-devel pkgconfig libXft-devel
+    if [ "$CMD" = "pacman" ];then
+        sudo pacman -S emacs
     else
         sudo apt-get update
-        sudo apt-get install autoconf -y
-        sudo apt-get install build-essential automake texinfo libjpeg-dev libncurses5-dev libtiff5-dev libgif-dev libpng-dev libxpm-dev libgtk-3-dev libgnutls28-dev -y
+        sudo apt-get install autoconf build-essential automake texinfo libjpeg-dev libncurses5-dev libtiff5-dev libgif-dev libpng-dev libxpm-dev libgtk-3-dev libgnutls28-dev -y
     fi
 
-    
-    # Compile
-    echo "Compiling Emacs"
-    cd $APP_HOME/cache/emacs
-    ./autogen.sh
-    ./configure --prefix="$APP_HOME/emacs" --with-mailutils --with-modules
-    make
-    
-    make install
+    if [ !"$CMD" = "pacman" ];then
+        # Download
+        if [ ! -d "$APP_HOME/cache/emacs" ];then
+            echo "Downloading source"
+            cd $APP_HOME/cache
+            wget http://mirrors.ustc.edu.cn/gnu/emacs/emacs-26.3.tar.gz
+            tar -xvzf emacs-26.3.tar.gz
+            mv ./emacs-26.3 emacs
+        fi
+        # Compile
+        echo "Compiling Emacs"
+        cd $APP_HOME/cache/emacs
+        ./autogen.sh
+        ./configure --prefix="$APP_HOME/emacs" --with-mailutils --with-modules
+        make
+        make install
+    fi
+
     if [ ! -e ~/.emacs.d/spacemacs.mk ];then
         rm -rf ~/.emacs.d
         git clone -b develop $SPACEMACS_REPO ~/.emacs.d
@@ -402,18 +399,6 @@ main() {
         pip install jupyterlab requests numpy scipy wakatime scapy scrapy bs4 flask
         
         nvm install 13
-
-        if [ "$CMD" = "yum" ]; then
-            curl --silent --location https://dl.yarnpkg.com/rpm/yarn.repo | sudo tee /etc/yum.repos.d/yarn.repo
-            sudo yum install yarn -y
-        else
-            curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-            echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-            sudo apt-get update && sudo apt-get install yarn -y
-            sudo rm /etc/apt/sources.list.d/yarn.list
-        fi
-
-        yarn global add @vue/cli
     fi
 }
 

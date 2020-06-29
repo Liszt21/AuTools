@@ -14,11 +14,12 @@ fi
 APP_HOME=${APP_HOME:-~/Apps}
 
 CMD="apt-get"
-if $(command -v yum); then
-	CMD="yum"
-elif $(command -v pacman); then
+command -v pacman >/dev/null 2>&1 && {
     CMD="pacman"
-fi
+}
+command -v yum >/dev/null 2>&1 && {
+    CMD="yum"
+}
 
 # Default settings
 VIA_GITEE=true

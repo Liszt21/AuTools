@@ -205,7 +205,7 @@ install_pyenv() {
         sudo yum install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel -y
         sudo yum install libffi-devel -y
     elif [ "$CMD" = "pacman" ]; then
-        sudo pacman -S zlibc 
+        sudo pacman -S  base-devel
     else
         sudo apt-get install zlibc zlib1g zlib1g-dev libffi-dev libssl-dev libbz2-dev libreadline-dev libsqlite3-dev tk-dev -y
     fi

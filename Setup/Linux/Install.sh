@@ -175,6 +175,12 @@ install_zsh() {
     fi
     export RUNZSH=no
     sh -c "$(curl -fsSL https://gitee.com/mirrors/oh-my-zsh/raw/master/tools/install.sh)"
+    ZSH_CUSTOM=~/.oh-my-zsh/custom
+    git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/zsh-autosuggestions
+    echo "plugins+=(zsh-autosuggestions)" >> ~/.zshrc
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $ZSH_CUSTOM/plugins/zsh-syntax-highlighting
+    echo "plugins+=(zsh-syntax-highlighting)" >> ~/.zshrc
+    echo "source \$ZSH_CUSTOM/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" >> ~/.zshrc
     echo "source $APP_HOME/entry" >> ~/.zshrc
     echo "Zsh install finished\n"
 }

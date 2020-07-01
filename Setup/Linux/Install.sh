@@ -111,6 +111,9 @@ check() {
     if [ -d "$APP_HOME/emacs" ];then
         EMACS_INSTALLED=true
     fi
+    command -v emacs >/dev/null 2>&1 && {
+        EMACS_INSTALLED=true
+    }
     if [ -d "$APP_HOME/nvm" ];then
         NVM_INSTALLED=true
     fi
@@ -167,6 +170,8 @@ install_zsh() {
     echo "Remember to exit from zsh to continue"
     if [ "$CMD" = "yum" ]; then
         sudo yum install zsh -y
+    elif [ "$CMD" = "pacman" ];then
+        sudo pacman -S zsh
     else
         sudo apt-get install zsh -y
     fi

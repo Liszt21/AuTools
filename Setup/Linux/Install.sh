@@ -181,6 +181,13 @@ install_zsh() {
     export RUNZSH=no
     sh -c "$(curl -fsSL https://gitee.com/mirrors/oh-my-zsh/raw/master/tools/install.sh)"
     ZSH_CUSTOM=~/.oh-my-zsh/custom
+    # Add Themes : typewritten
+    git clone https://github.com/reobin/typewritten.git $ZSH_CUSTOM/themes/typewritten
+    ln -s "$ZSH_CUSTOM/themes/typewritten/typewritten.zsh-theme" "$ZSH_CUSTOM/themes/typewritten.zsh-theme"
+    echo "ZSH_THEME=\"typewritten\"" >> ~/.zshrc
+    echo "export TYPEWRITTEN_PROMPT_LAYOUT=\"multiline\"" >> ~/.zshrc
+
+    # Add Plugins : zsh-autosuggestions zsh-syntax-highlighting
     git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/zsh-autosuggestions
     echo "plugins+=(zsh-autosuggestions)" >> ~/.zshrc
     git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $ZSH_CUSTOM/plugins/zsh-syntax-highlighting

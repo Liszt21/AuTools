@@ -1,28 +1,33 @@
 # Autools
 
-## Setup
-### Linux
-#### Usage
+## scripts
+### init
+#### linux
 ```
 # from Github
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/Liszt21/AuTools/master/Setup/Linux/Install.sh)"
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/Liszt21/AuTools/master/scripts/init/linux.sh)"
 # from Gitee
-sh -c "$(curl -fsSL https://gitee.com/liszt21/AuTools/raw/master/Setup/Linux/Install.sh)"
+sh -c "$(curl -fsSL https://gitee.com/liszt21/AuTools/raw/master/scripts/init/linux.sh)"
 ```
-#### Apps
+##### apps
 - emacs
 - zsh
 - pyenv
 - nvm
 - docker
 
-### Windows
-- scoop
-
-### Mac
+#### windows
 ```
 # from Github
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/Liszt21/AuTools/master/Setup/Mac/Install.sh)"
+iwr -useb https://raw.githubusercontent.com/Liszt21/AuTools/master/scripts/init/windows.ps1 | iex
 # from Gitee
-sh -c "$(curl -fsSL https://gitee.com/liszt21/AuTools/raw/master/Setup/Mac/Install.sh)"
+iwr -useb https://gitee.com/liszt21/AuTools/raw/master/scripts/init/windows.ps1 | iex
+```
+
+#### macos
+```
+# from Github
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/Liszt21/AuTools/master/scripts/init/macos.sh)"
+# from Gitee
+sh -c "$(curl -fsSL https://gitee.com/liszt21/AuTools/raw/master/scripts/init/macos.sh)"
 ```
